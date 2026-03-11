@@ -73,3 +73,10 @@ Dự án được xây dựng với mục tiêu phát triển một nền tảng
 - EfficientNet
 - YOLOv8n-face
 - MediaPipe FaceMesh
+
+## Ảnh chụp website thực tế
+<img width="1755" height="2576" alt="fig_5_84_skin_analyzer_capture_crop" src="https://github.com/user-attachments/assets/0fc4be4d-72fc-4114-a5dc-1a3559877393" />
+<img width="1755" height="1788" alt="fig_5_85_skin_analyzer_region_final" src="https://github.com/user-attachments/assets/28b6ed7c-c8fb-4279-b480-10cd6687c6a4" />
+
+
+
