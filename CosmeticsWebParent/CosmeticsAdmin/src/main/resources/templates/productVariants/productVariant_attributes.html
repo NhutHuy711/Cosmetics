@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<body>
+	<div th:fragment="content" th:remove="tag">
+		<div class="card shadow-sm border-0">
+			<div class="card-body">
+				<h5 class="mb-4">Product Variant Information</h5>
+				
+				<div class="row g-4">
+                    <!-- Product -->
+                    <div class="row g-4">
+                        <!-- CREATE: cho chọn -->
+                        <div class="col-md-6" th:if="${!#strings.contains(pageTitle, 'Edit Product')}">
+                            <label class="form-label">Product <span class="text-danger">*</span></label>
+                            <select id="productSelect" th:field="*{product}" class="form-select w-100" required>
+                                <th:block th:each="product : ${listProducts}">
+                                    <option th:value="${product.id}">[[${product.name}]]</option>
+                                </th:block>
+                            </select>
+                        </div>
+
+                        <!-- EDIT/VIEW: KHÔNG cho đổi -->
+                        <div class="col-md-6" th:if="${#strings.contains(pageTitle, 'Edit Product')}">
+                            <label class="form-label">Product</label>
+
+                            <!-- Hiển thị tên -->
+                            <input type="text" class="form-control"
+                                   th:value="${productVariant.product != null ? productVariant.product.name : ''}"
+                                   readonly />
+
+                            <!-- Submit lại product id để binding không bị null -->
+                            <input type="hidden" name="product" th:value="${productVariant.product.id}" />
+                            <!-- Nếu th:field *{product} không binding đúng kiểu entity, dùng cách an toàn:
+                            <input type="hidden" name="product" th:value="${productVariant.product.id}" />
+                            -->
+                        </div>
+                    </div>
+
+
+                    <!-- Options -->
+                    <!-- =========================
+                     ADD NEW: show SELECT
+                     ========================= -->
+                    <div id="optionsContainer" class="row g-4 mt-2"
+                         th:if="${!#strings.contains(pageTitle, 'Edit Product')}">
+
+                        <th:block th:each="type : ${listOptionTypes}">
+                            <div class="col-md-6">
+                                <label class="form-label" th:text="${type.name} + ' Value:'"></label>
+
+                                <select class="form-select optionValueSelect"
+                                        name="optionValueIds"
+                                        th:attr="data-type-id=${type.id}">
+
+                                    <option value="">-- Select Value --</option>
+
+                                    <th:block th:each="value : ${type.values}">
+                                        <option th:value="${value.id}"
+                                                th:selected="${productVariant != null and productVariant.optionValues.contains(value)}">
+                                            [[${value.value}]]
+                                        </option>
+                                    </th:block>
+                                </select>
+                            </div>
+                        </th:block>
+                    </div>
+
+                    <!-- EDIT: show READONLY + hidden optionValueIds -->
+                    <div id="optionsContainerReadonly" class="row g-4 mt-2"
+                         th:if="${#strings.contains(pageTitle, 'Edit Product') and productVariant.optionValues != null and !productVariant.optionValues.isEmpty()}">
+
+                        <!-- hidden ids để submit -->
+                        <th:block th:each="v : ${productVariant.optionValues}">
+                            <input type="hidden" name="optionValueIds" th:value="${v.id}" />
+                        </th:block>
+
+                        <!-- hiển thị readonly theo type->value (nếu bạn vẫn muốn map) -->
+                        <th:block th:each="e : ${productVariant.optionTypeValueMap}">
+                            <div class="col-md-6">
+                                <label class="form-label" th:text="${e.key} + ' Value:'"></label>
+                                <input type="text" class="form-control" th:value="${e.value}" readonly />
+                            </div>
+                        </th:block>
+                    </div>
+                </div>
+			</div>
+		</div>
+	</div>
+
+</body>
+
+
+</html>

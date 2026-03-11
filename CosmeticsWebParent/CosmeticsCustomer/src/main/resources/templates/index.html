@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="fragments :: page_head('Cosmetics', 'none')"/>
+
+<body>
+    <div class="border-bottom">
+        <div th:replace="navigation :: header_menu"></div>
+        <div th:replace="navigation :: search_nav"></div>
+        <div th:replace="navigation :: category_nav"></div>
+        <div th:replace="fragments :: loading_spinner"></div>
+    </div>
+<main>
+        <section class="mt-8">
+            <div class="container">
+                <div class="hero-slider">
+                    <!-- Slider item 3 -->
+                    <div th:style="'background: url(' + @{/images/banner/banner3.png} + ') center / cover no-repeat;
+                height: clamp(320px, 38vw, 520px);
+                border-radius:.5rem; display:flex; align-items:center; justify-content:flex-end;'">
+                        <div class="ps-lg-12 py-lg-16 col-xxl-5 col-md-7 py-14 px-8 text-end">
+                            <span class="badge text-bg-success">100% Authentic</span>
+                            <h2 class="text-dark display-5 fw-bold mt-4">Derm-Approved Skincare</h2>
+                            <p class="lead">Shop cleansers, serums, and SPF from trusted brands — factory-sealed with full warranty.</p>
+                        </div>
+                    </div>
+
+                    <!-- Slider item 1 -->
+                    <div th:style="'background: url(' + @{/images/banner/banner1.png} + ') center / cover no-repeat;
+                        height: clamp(320px, 38vw, 520px);
+                        border-radius:.5rem; display:flex; align-items:center;'">
+<!--                        <div class="ps-lg-16 offset-xxl-4 py-lg-16 col-xxl-5 col-md-7 py-14 px-8 text-xs-center">-->
+<!--                            <span class="badge text-bg-warning">Grand Opening – Up to 40% Off</span>-->
+<!--                            <h2 class="text-dark display-5 fw-bold mt-4">TechPhone – Your Trusted Smartphone Store</h2>-->
+<!--                            <p class="lead">Discover the latest smartphones with AI features, fast delivery, and unbeatable service.</p>-->
+<!--                        </div>-->
+                    </div>
+
+                    <!-- Slider item 2 -->
+                    <div th:style="'background: url(' + @{/images/banner/banner2.png} + ') center / cover no-repeat;
+                        height: clamp(320px, 38vw, 520px);
+                        border-radius:.5rem; display:flex; align-items:center;'">
+                        <div class="ps-lg-12 py-lg-16 col-xxl-5 col-md-7 py-14 px-8 text-xs-center text-white hero-text">
+                            <span class="badge bg-danger text-white shadow-sm">Beauty Deals</span>
+                            <h2 class="display-5 fw-bold mt-4">Pro Skin Care — Best Prices</h2>
+                            <p class="lead opacity-90">Exclusive discounts on Cocoon, La Roche-Posay, The Ordinary, Innisfree, and more.</p>
+                        </div>
+                    </div>
+
+
+
+
+                </div>
+            </div>
+        </section>
+
+
+        <section class="mb-lg-10 mt-lg-14 my-8" id="featured-categories">
+            <div class="container">
+                <div class="row">
+                    <div class="col-12 mb-6">
+                        <h3 class="mb-0">Featured Brands</h3>
+                    </div>
+                </div>
+                <div class="category-slider">
+                    <div class="item" th:each="brand : ${listBrands}">
+                        <a th:href="@{'/brand/' + ${#uris.escapePath(brand.name)}}"
+                           class="text-decoration-none d-block">
+                            <div class="card card-product mb-lg-4">
+                                <div class="card-body text-center py-8 d-flex flex-column align-items-center justify-content-center category-card">
+                                    <div class="category-image-wrapper">
+                                        <img th:if="${brand.logo != null}"
+                                             th:src="@{${brand.logoPath}}"
+                                             th:alt="${brand.name}"
+                                             class="category-image">
+                                    </div>
+                                    <div class="text-truncate mt-3" th:text="${brand.name}">Brand Name</div>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="my-lg-14 mb-8" id="special-offer">
+            <div class="container">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="d-flex justify-content-between align-items-center mb-8">
+                            <div>
+                                <h3 class="mb-0">Special Offers of the Week!</h3>
+                                <p class="mb-0">Get up to 50% off on your first order</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="product-slider">
+                    <div class="col" th:each="productVariant : ${listSpecialOffers}">
+                        <div th:replace="fragments :: product_card"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="my-lg-14 my-8" id="best-sellers">
+            <div class="container">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="d-flex justify-content-between align-items-center mb-8">
+                            <div>
+                                <h3 class="mb-0">Bestsellers In Your Area</h3>
+                                <p class="mb-0">Most popular products near you</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="product-slider">
+                    <div class="col" th:each="productVariant : ${listBestSellers}">
+                        <div th:replace="fragments :: product_card"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-lg-14 my-8" id="new-products" >
+            <div class="container">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="d-flex justify-content-between align-items-center mb-8">
+                            <div>
+                                <h3 class="mb-0">New Products</h3>
+                                <p class="mb-0">New products with updated stocks</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="product-slider">
+                    <div class="col" th:each="productVariant : ${listNewProducts}">
+                        <div th:replace="fragments :: product_card"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+
+</main>
+<section class="my-lg-14 mb-8">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6 col-lg-3">
+                    <div class="mb-8 mb-xl-0">
+                        <div class="mb-6"><img th:src="@{/images/icons/clock.svg}" alt=""></div>
+                        <h3 class="h5 mb-3">Lightning-Fast Beauty Delivery</h3>
+                        <p>Order skincare and makeup today and get doorstep delivery in no time—fresh, sealed, and ready to glow.</p>
+                    </div>
+                </div>
+
+                <div class="col-md-6 col-lg-3">
+                    <div class="mb-8 mb-xl-0">
+                        <div class="mb-6"><img th:src="@{/images/icons/gift.svg}" alt=""></div>
+                        <h3 class="h5 mb-3">Exclusive Beauty Deals & Gifts</h3>
+                        <p>Unbeatable offers on top brands—Cocoon, La Roche-Posay, The Ordinary, Innisfree, and more. Bonus minis on select orders.</p>
+                    </div>
+                </div>
+
+                <div class="col-md-6 col-lg-3">
+                    <div class="mb-8 mb-xl-0">
+                        <div class="mb-6"><img th:src="@{/images/icons/package.svg}" alt=""></div>
+                        <h3 class="h5 mb-3">Curated Skincare & Makeup</h3>
+                        <p>From gentle cleansers and serums to SPF and lip care—handpicked products for every skin type and concern.</p>
+                    </div>
+                </div>
+
+                <div class="col-md-6 col-lg-3">
+                    <div class="mb-8 mb-xl-0">
+                        <div class="mb-6"><img th:src="@{/images/icons/refresh-cw.svg}" alt=""></div>
+                        <h3 class="h5 mb-3">Easy Returns & 100% Authentic</h3>
+                        <p>
+                            Not a match for your skin? Return with ease and get a fast refund. All items are genuine and factory-sealed —
+                            <a href="#!">Return policy</a>.
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+</section>
+
+<div th:replace="navigation :: footer_menu"></div>
+
+<!--    Mở camera-->
+    <!-- Floating camera FAB -->
+    <button id="skin-toggle"
+            class="skin-fab"
+            type="button"
+            aria-label="Open skin analysis camera"
+            data-tooltip="Open skin analysis camera">
+        <!-- Camera SVG -->
+        <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M9.5 6.5h5l1 1.5H18a3 3 0 0 1 3 3v6a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3v-6a3 3 0 0 1 3-3h2.5l1-1.5zM12 17.5a4 4 0 1 0 0-8 4 4 0 0 0 0 8zm0-1.8a2.2 2.2 0 1 1 0-4.4 2.2 2.2 0 0 1 0 4.4z" fill="currentColor"/>
+        </svg>
+    </button>
+
+
+
+    <style>
+        :root{
+            --fab-size: 68px;
+            --fab-radius: 999px;
+            --fab-bg: linear-gradient(135deg,#0aad0a 0%,#067a06 100%);
+            --fab-shadow: 0 10px 24px rgba(0,0,0,.22), 0 6px 12px rgba(0,0,0,.12);
+            --fab-shadow-hover: 0 14px 32px rgba(0,0,0,.28), 0 8px 18px rgba(0,0,0,.14);
+            --fab-ring: rgba(10,173,10,.35);
+            --fab-border: rgba(255,255,255,.22);
+            --tooltip-bg: rgba(20,20,20,.92);
+            --tooltip-color: #fff;
+        }
+
+        /* Dark mode (Bootstrap 5 data-bs-theme) */
+        [data-bs-theme="dark"] :root,
+        :root[data-bs-theme="dark"]{
+            --tooltip-bg: rgba(240,240,240,.95);
+            --tooltip-color: #111;
+        }
+
+        .skin-fab{
+            position: fixed;
+            bottom: 22px;
+            right: 22px;
+            width: var(--fab-size);
+            height: var(--fab-size);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--fab-border);
+            border-radius: var(--fab-radius);
+            background: var(--fab-bg);
+            color: #fff;
+            box-shadow: var(--fab-shadow);
+            cursor: pointer;
+            z-index: 1060;
+            transition: transform .2s ease, box-shadow .2s ease, filter .2s ease;
+            backdrop-filter: saturate(1.2) blur(6px);
+            -webkit-tap-highlight-color: transparent;
+            outline: none;
+        }
+
+        .skin-fab:hover{
+            transform: translateY(-2px);
+            box-shadow: var(--fab-shadow-hover);
+            filter: brightness(1.03);
+        }
+
+        .skin-fab:active{
+            transform: translateY(0);
+            filter: brightness(.98);
+        }
+
+        /* Vòng phát sáng nhịp */
+        .skin-fab::after{
+            content:"";
+            position:absolute;
+            inset: -6px;
+            border-radius: var(--fab-radius);
+            box-shadow: 0 0 0 0 var(--fab-ring);
+            animation: skinPulse 2s ease-out infinite;
+            pointer-events: none;
+        }
+
+        @keyframes skinPulse{
+            0%   { box-shadow: 0 0 0 0 var(--fab-ring); opacity: 1; }
+            70%  { box-shadow: 0 0 0 16px rgba(10,173,10,0); opacity: 0; }
+            100% { box-shadow: 0 0 0 0 rgba(10,173,10,0); opacity: 0; }
+        }
+
+        /* Tooltip thuần CSS */
+        .skin-fab[data-tooltip]{
+            position: fixed;
+        }
+        .skin-fab[data-tooltip]::before{
+            content: attr(data-tooltip);
+            position: absolute;
+            right: calc(100% + 10px);
+            bottom: 50%;
+            transform: translateY(50%) translateX(8px);
+            background: var(--tooltip-bg);
+            color: var(--tooltip-color);
+            padding: .4rem .6rem;
+            border-radius: .5rem;
+            font-size: .85rem;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity .16s ease, transform .16s ease;
+            box-shadow: 0 6px 18px rgba(0,0,0,.18);
+        }
+        .skin-fab[data-tooltip]:hover::before,
+        .skin-fab[data-tooltip]:focus-visible::before{
+            opacity: 1;
+            transform: translateY(50%) translateX(0);
+        }
+
+        /* Ripple effect */
+        .skin-fab .ripple{
+            position: absolute;
+            border-radius: 50%;
+            transform: scale(0);
+            background: rgba(255,255,255,.35);
+            animation: ripple .5s linear;
+            pointer-events: none;
+        }
+        @keyframes ripple{
+            to { transform: scale(4); opacity: 0; }
+        }
+
+        /* Tăng size icon bên trong FAB */
+        .skin-fab svg{
+            width: 40px;   /* 28–40px tùy ý */
+            height: 40px;
+        }
+
+
+        /* Tôn trọng reduced-motion */
+        @media (prefers-reduced-motion: reduce){
+            .skin-fab,
+            .skin-fab::after,
+            .skin-fab[data-tooltip]::before{
+                animation: none !important;
+                transition: none !important;
+            }
+        }
+
+        /* Kích thước nhỏ trên màn hình rất hẹp */
+        @media (max-width: 420px){
+            :root{ --fab-size: 60px; }
+        }
+    </style>
+
+    <script>
+        (function(){
+            const btn = document.getElementById('skin-toggle');
+            if(!btn) return;
+
+            // Điều hướng (click + Enter/Space)
+            const go = () => { window.location.href = '/Cosmetics/skin-analysis'; };
+            btn.addEventListener('click', (e) => {
+                // Ripple
+                const rect = btn.getBoundingClientRect();
+                const ripple = document.createElement('span');
+                ripple.className = 'ripple';
+                const size = Math.max(rect.width, rect.height);
+                ripple.style.width = ripple.style.height = size + 'px';
+                ripple.style.left = (e.clientX - rect.left - size/2) + 'px';
+                ripple.style.top  = (e.clientY - rect.top  - size/2) + 'px';
+                btn.appendChild(ripple);
+                setTimeout(() => ripple.remove(), 500);
+
+                // Điều hướng
+                go();
+            });
+
+            btn.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    go();
+                }
+            });
+        })();
+    </script>
+
+
+
+    <script type="text/javascript">
+    contextPath = "[[@{/}]]";
+    var csrfHeaderName = "[[${_csrf.headerName}]]";
+    var csrfValue = "[[${_csrf.token}]]";
+    decimalSeparator = "[[${DECIMAL_POINT_TYPE == 'COMMA' ? ',' : '.'}]]";
+    thousandSeparator = "[[${THOUSANDS_POINT_TYPE == 'COMMA' ? ',' : '.'}]]";
+</script>
+<script type="text/javascript" th:src="@{/libs/slick-carousel/slick/slick.min.js}"></script>
+<script type="text/javascript" th:src="@{/js/slick-slider.js}"></script>
+<script type="text/javascript" th:src="@{/js/common_toast.js}"></script>
+<script type="text/javascript" th:src="@{/js/cart.js}"></script>
+<script type="text/javascript" th:src="@{/js/list_brand_categories.js}"></script>
+<!-- <script type="text/javascript" th:src="@{/js/theme-switcher.js}"></script> -->
+    <script th:if="${toastMsg != null}" th:inline="javascript">
+        /*<![CDATA[*/
+        const _msg  = /*[[${toastMsg}]]*/ '';
+        const _type = /*[[${toastType}]]*/ 'info';
+        if (_type === 'error')       showErrorMessage(_msg);
+        else if (_type === 'warning')showWarningMessage(_msg);
+        else                         showSuccessMessage(_msg);
+        /*]]>*/
+    </script>
+
+
+
+</body>
+
+</html>

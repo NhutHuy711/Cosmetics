@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<body>
+	<div th:fragment="content" th:remove="tag">
+		<div class="card shadow-sm border-0">
+			<div class="card-body">
+				<h5 class="mb-4">Product Variant Information</h5>
+				
+				<div class="row g-4">
+<!--					&lt;!&ndash; Title &ndash;&gt;-->
+<!--					<div class="col-md-6">-->
+<!--						<label class="form-label">Product Variant Name <span class="text-danger">*</span></label>-->
+<!--						<div class="form-group">-->
+<!--							<input type="text" class="form-control validate-field" -->
+<!--								th:field="*{name}" -->
+<!--								placeholder="Product Name"-->
+<!--								th:readonly="${isReadOnlyForSalesperson}" />-->
+<!--							<div class="invalid-feedback" -->
+<!--								th:text="${@messageServiceAdmin.getMessage('PRODUCT_NAME_REQUIRED')}">-->
+<!--							</div>-->
+<!--						</div>-->
+<!--					</div>-->
+                    <!-- name -->
+                    <div class="col-md-6">
+                        <label class="form-label">Product Variant Name <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" th:field="*{name}"
+                               placeholder=""
+                               minlength="3" maxlength="256"
+                               readonly
+                               id="variantName"/>
+                    </div>
+
+                    <!-- Product Category -->
+                    <div class="col-md-6">
+                        <label class="form-label">Product Category</label>
+                        <input type="text" class="form-control" id="categoryName"
+                               th:value="${productVariant.product != null ? productVariant.product.category.name : ''}"
+                               readonly />
+                    </div>
+
+                    <!-- Alias -->
+                    <div class="col-md-6">
+                        <label class="form-label">Alias <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" th:field="*{alias}"
+                               placeholder="Default is product variant name (spaces are replaced by dashes)"
+                               minlength="3" maxlength="256"
+                               readonly
+                               id="variantAlias"/>
+                    </div>
+
+                    <!-- Brand -->
+                    <div class="col-md-6">
+                        <label class="form-label">Brand</label>
+                        <input type="text" class="form-control" id="brandName"
+                               th:value="${productVariant.product != null ? productVariant.product.brand.name : ''}"
+                               readonly />
+                    </div>
+
+<!--					 Cost-->
+					<div class="col-md-6">
+						<label class="form-label">Cost <span class="text-danger">*</span></label>
+						<div class="form-group">
+							<div class="input-group">
+								<span class="input-group-text bg-light">$</span>
+								<input type="number"
+									   class="form-control validate-field"
+									   th:field="*{cost}"
+									   placeholder="Enter cost"
+									   step="0.01"
+									   readonly
+									   th:value="${#authorization.expression('hasAuthority(''Editor'')') && product.id == null} ? 0 : *{cost}"
+									   th:style="${#authorization.expression('hasAuthority(''Editor'')')  || #authorization.expression('hasAuthority(''Salesperson'')')} ? 'background-color: #e9ecef' : ''" />
+							</div>
+							<div class="invalid-feedback"
+								th:text="${@messageServiceAdmin.getMessage('COST_REQUIRED')}">
+							</div>
+						</div>
+					</div>
+
+<!--					 Price-->
+					<div class="col-md-6">
+						<label class="form-label">Price <span class="text-danger">*</span></label>
+						<div class="form-group">
+							<div class="input-group">
+								<span class="input-group-text bg-light">$</span>
+								<input type="number"
+									   class="form-control"
+									   id="price"
+									   th:field="*{price}"
+									   placeholder="Enter price"
+									   step="0.01"
+									   min="0"
+									   th:readonly="${#authorization.expression('hasAuthority(''Editor'')')}"
+									   th:value="${#authorization.expression('hasAuthority(''Editor'')') && product.id == null} ? 0 : *{price}"
+									   th:style="${#authorization.expression('hasAuthority(''Editor'')')} ? 'background-color: #e9ecef' : ''" />
+							</div>
+							<div class="invalid-feedback" style="display: none;"
+								th:text="${@messageServiceAdmin.getMessage('PRICE_REQUIRED')}">
+							</div>
+						</div>
+					</div>
+
+					<!-- Status -->
+					<div class="col-md-6">
+						<label class="form-label">Status</label>
+						<div class="form-check form-switch">
+							<input class="form-check-input" type="checkbox" th:field="*{enabled}">
+							<label class="form-check-label">Enable this product</label>
+						</div>
+					</div>
+
+
+                    <!-- In Stock -->
+					<div class="col-md-6">
+						<label class="form-label">In Stock</label>
+						<input type="text"
+							   class="form-control"
+							   th:field="*{stock}"
+							   readonly
+							   style="background-color: #e9ecef;" />
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+</body>
+
+
+</html>

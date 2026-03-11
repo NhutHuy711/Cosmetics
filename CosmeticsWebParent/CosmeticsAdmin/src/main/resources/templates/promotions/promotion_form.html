@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="fragments :: page_head(${pageTitle}, 'none')"/>
+
+<body>
+<style>
+    /* --- Uniform height, border, radius like Bootstrap .form-control --- */
+    .select2-container--default .select2-selection--single,
+    .select2-container--default .select2-selection--multiple {
+        min-height: calc(2.25rem + 2px);
+        border: 1px solid var(--bs-border-color, #dee2e6) !important;
+        border-radius: .375rem !important; /* same as .form-control */
+        padding: .25rem .5rem;
+        display: flex;
+        align-items: center;
+        background-color: #fff;
+        box-shadow: none;
+    }
+
+    /* Adjust text padding inside */
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        padding-left: 0;
+        line-height: 1.5;
+        color: #212529; /* match form-control */
+    }
+
+    /* Multiple tags spacing */
+    .select2-container--default .select2-selection--multiple .select2-selection__rendered {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.25rem;
+    }
+
+    /* Remove unwanted default borders */
+    .select2-container--default .select2-selection--single:focus,
+    .select2-container--default .select2-selection--multiple:focus {
+        outline: none;
+        box-shadow: 0 0 0 0.25rem rgba(13,110,253,.25); /* same as form-control:focus */
+        border-color: #86b7fe !important;
+    }
+
+    /* Dropdown results */
+    .select2-dropdown {
+        border-color: #dee2e6 !important;
+        border-radius: .375rem !important;
+    }
+
+    /* Remove background gray when focused */
+    .select2-container--default.select2-container--focus .select2-selection--single {
+        border-color: #86b7fe !important;
+    }
+
+    /* Match font with Bootstrap form controls */
+    .select2-container--default .select2-selection--single .select2-selection__rendered,
+    .select2-container--default .select2-selection--multiple .select2-selection__rendered {
+        font-size: 1rem;
+        font-family: inherit;
+    }
+
+    /* Adjust dropdown search field */
+    .select2-search--dropdown .select2-search__field {
+        border: 1px solid #ced4da;
+        border-radius: .375rem;
+        padding: .375rem .75rem;
+        font-size: 1rem;
+    }
+</style>
+
+<div th:replace="navigation :: top_nav"></div>
+<div class="main-wrapper">
+    <div th:replace="navigation :: menu"></div>
+
+    <main class="main-content-wrapper bg-white">
+        <div class="container">
+            <!-- header row -->
+            <div class="row mb-8">
+                <div class="col-md-12">
+                    <div class="d-md-flex justify-content-between align-items-center">
+                        <div>
+                            <h2>[[${pageTitle}]]</h2>
+                            <div class="d-flex">
+                                <!-- FIX breadcrumb -->
+                                <a th:href="@{/promotions}" class="text-inherit">Promotions</a>
+                                <span class="mx-2">/</span>
+                                <span class="text-muted">[[${pageTitle}]]</span>
+                            </div>
+                        </div>
+                        <div>
+                            <a th:href="@{/promotions}" class="btn btn-light">Back to Promotions</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <form id="promotionForm" th:action="@{/promotions/save}" th:object="${promotion}" method="post">
+                <input type="hidden" th:field="*{id}" />
+                <!-- BASIC INFO -->
+                <div class="mb-3">
+                    <label class="form-label">Promotion Name</label>
+                    <input type="text" class="form-control" th:field="*{name}" />
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Start Date</label>
+                        <input type="datetime-local" class="form-control" th:field="*{startAt}" />
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">End Date</label>
+                        <input type="datetime-local" class="form-control" th:field="*{endAt}" />
+                    </div>
+                </div>
+
+                <!-- ENABLED TOGGLE -->
+                <div class="form-check form-switch mb-4">
+                    <input type="checkbox" class="form-check-input" th:field="*{enabled}" />
+                    <label class="form-check-label">Enable Promotion</label>
+                </div>
+
+                <hr />
+
+                <!-- PROMOTION MODE -->
+                <h5>Select Promotion Mode</h5>
+
+                <div class="mb-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="promotionMode" id="modeBulk"
+                               value="bulk" checked>
+                        <label class="form-check-label" for="modeBulk">
+                            Bulk Discount (same discount for selected products)
+                        </label>
+                    </div>
+
+                    <div class="form-check mt-2">
+                        <input class="form-check-input" type="radio" name="promotionMode" id="modeIndividual"
+                               value="individual">
+                        <label class="form-check-label" for="modeIndividual">
+                            Individual Discount (different discount per product)
+                        </label>
+                    </div>
+                </div>
+
+
+                <hr />
+
+                <!-- BULK DISCOUNT BLOCK -->
+                <div id="bulkBlock">
+                    <h5>Bulk Discount Settings</h5>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Discount Value</label>
+                            <input type="number" class="form-control" th:field="*{percentOff}" step="0.01" />
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Select Variants</label>
+                        <select class="form-select" id="variantIds" multiple th:field="*{variantIds}">
+                            <option th:each="variant : ${allVariants}"
+                                    th:value="${variant.id}"
+                                    th:text="${variant.name}">
+                            </option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- INDIVIDUAL DISCOUNT BLOCK -->
+                <div id="individualBlock" style="display: none;">
+                    <h5>Individual Discounts Per Product/Variant</h5>
+
+                    <button type="button" id="btnAddDiscount"
+                            class="btn btn-outline-primary btn-sm mb-3">
+                        + Add Product Discount
+                    </button>
+
+                    <div id="individualList">
+                        <div th:each="pp, stat : *{promotionProducts}" class="individual-item border p-3 mb-3 rounded">
+                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+
+                                <!-- Select product -->
+                                <div style="flex:1;">
+                                    <select class="form-select variant-select search-product" th:name="'promotionProducts['+${stat.index}+'].variantId'">
+                                        <option value="">Search product...</option>
+                                        <option th:each="variant : ${allVariants}"
+                                                th:value="${variant.id}"
+                                                th:text="${variant.name}"
+                                                th:selected="${variant.id == pp.variant.id}">
+                                        </option>
+                                    </select>
+                                </div>
+
+                                <!-- Discount input -->
+                                <div class="input-group" style="width: 200px;">
+                                    <input type="number" class="form-control discount-input"
+                                           th:name="'promotionProducts['+${stat.index}+'].percentOff'"
+                                           th:value="${pp.percentOff}"
+                                           min="0" max="100" step="0.01" />
+                                    <button type="button" class="btn btn-outline-danger btn-sm btn-remove" title="Remove this discount">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <template id="variantTemplate">
+                        <div class="individual-item border p-3 mb-3 rounded">
+                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+
+                                <!-- Select product -->
+                                <div style="flex:1;">
+                                    <select class="form-select variant-select search-product" style="width:100%;">
+                                        <option value="">Search product...</option>
+                                    </select>
+                                </div>
+
+                                <!-- Discount input -->
+                                <div class="input-group" style="width: 200px;">
+                                    <input type="number" class="form-control discount-input"
+                                           min="0" max="100" step="0.01"
+                                           placeholder="Discount %" />
+                                    <button type="button" class="btn btn-outline-danger btn-sm btn-remove" title="Remove this discount">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+
+                            </div>
+                        </div>
+                    </template>
+
+
+
+                </div>
+
+                <button class="btn btn-primary mt-3">Save Promotion</button>
+
+            </form>
+
+        </div>
+    </main>
+</div>
+
+<div th:replace="modal_fragments :: modal_dialog"></div>
+<div th:replace="fragments :: footer"></div>
+<div th:replace="fragments :: common-js"></div>
+
+<!-- Select2 -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css">
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<!-- Toast (đọc từ model/flash) -->
+<script th:inline="javascript">
+    const toastType    = /*[[${toastType}]]*/ null;
+    const toastMessage = /*[[${toastMessage}]]*/ null;
+    $(function () {
+        if (toastMessage) {
+            if (toastType === 'error')      showErrorMessage(toastMessage);
+            else if (toastType === 'warning') showWarningMessage(toastMessage);
+            else                             showSuccessMessage(toastMessage);
+        }
+    });
+</script>
+
+<!-- Init Select2 (THYMELEAF inline để render URL đúng) -->
+<script th:inline="javascript">
+    $(function () {
+        const searchUrl = /*[[@{/promotions/variants/search}]]*/ '/promotions/variants/search';
+        $('#variantIds').select2({
+            placeholder: 'Search by ID or name…',
+            width: '100%',
+            multiple: true,
+            minimumInputLength: 1,
+            ajax: {
+                url: searchUrl,
+                delay: 250,
+                data: params => ({ term: params.term, page: params.page || 1 }),
+                processResults: (data, params) => ({
+                    results: data,
+                    pagination: { more: data.length === 20 }
+                })
+            }
+        });
+    });
+</script>
+
+<script>
+    const bulkBlock = document.getElementById("bulkBlock");
+    const individualBlock = document.getElementById("individualBlock");
+    const radioBulk = document.getElementById("modeBulk");
+    const radioIndividual = document.getElementById("modeIndividual");
+
+    function clearBulkHidden() {
+        document.querySelectorAll('input[type="hidden"].pp-hidden[name^="promotionProducts["]')
+            .forEach(e => e.remove());
+    }
+
+    // Toggle display for radio
+    function updatePromotionMode() {
+        clearBulkHidden();
+
+        if (radioIndividual.checked) {
+            bulkBlock.style.display = "none";
+            individualBlock.style.display = "block";
+        } else {
+            bulkBlock.style.display = "block";
+            individualBlock.style.display = "none";
+        }
+    }
+
+    radioBulk.addEventListener("change", updatePromotionMode);
+    radioIndividual.addEventListener("change", updatePromotionMode);
+
+    updatePromotionMode(); // initial state
+
+    // Add Product Discount dynamically
+    const btnAddDiscount = document.getElementById("btnAddDiscount");
+    const container = document.getElementById("individualList");
+    const template = document.getElementById("variantTemplate");
+
+    const searchUrl = /*[[@{/CosmeticsAdmin/promotions/variants/search}]]*/ '/CosmeticsAdmin/promotions/variants/search';
+
+    // Reindex name attributes
+    function refreshFieldNames() {
+        const items = container.querySelectorAll(".individual-item");
+        items.forEach((item, index) => {
+            const select = item.querySelector(".variant-select");
+            const input = item.querySelector(".discount-input");
+            select.setAttribute("name", `promotionProducts[${index}].variantId`);
+            input.setAttribute("name", `promotionProducts[${index}].percentOff`);
+        });
+    }
+
+
+    // Init Select2 cho 1 element cụ thể
+    function initSelect2(element) {
+        $(element).select2({
+            placeholder: 'Search product...',
+            width: '100%',
+            minimumInputLength: 1,
+            ajax: {
+                url: searchUrl,
+                delay: 250,
+                data: params => ({ term: params.term }),
+                processResults: data => ({
+                    results: data.map(p => ({
+                        id: p.id,
+                        text: p.text   // DÙNG text, KHÔNG dùng p.name
+                    }))
+                })
+            }
+        });
+    }
+
+
+    // Add new discount row
+    btnAddDiscount.addEventListener("click", function () {
+        const clone = template.content.cloneNode(true);
+        const newItem = clone.querySelector(".individual-item");
+
+        // Remove button
+        newItem.querySelector(".btn-remove").addEventListener("click", function () {
+            newItem.remove();
+            refreshFieldNames();
+        });
+
+        // Append & init
+        container.appendChild(newItem);
+        const selectElement = newItem.querySelector(".search-product");
+        initSelect2(selectElement);
+
+        refreshFieldNames();
+    });
+</script>
+
+
+
+<script type="text/javascript"> moduleURL = "[[@{/promotions}]]"; </script>
+<script th:src="@{/js/common_form.js}"></script>
+<script th:inline="javascript">
+    window.contextPath    = /*[[@{/}]]*/ '/';
+    window.csrfHeaderName = /*[[${_csrf.headerName}]]*/ 'X-CSRF-TOKEN';
+    window.csrfValue      = /*[[${_csrf.token}]]*/ '';
+</script>
+
+
+<script th:inline="javascript">
+    $(function () {
+        const $form     = $('#promotionForm');
+        const $percent  = $('#percentOff');
+        const $start    = $('#startAt');
+        const $end      = $('#endAt');
+        const $products = $('#variantIds');
+        const $productsWrap = $products.next('.select2');
+        const $modeBulk = $('#modeBulk');
+        const $modeIndividual = $('#modeIndividual');
+
+        // URL API kiểm tra trùng
+        const overlapUrl = /*[[@{/promotions/overlaps}]]*/ '/promotions/overlaps';
+
+        function setInvalid($el, msg) {
+            $el.addClass('is-invalid');
+            $el.siblings('.invalid-feedback').remove();
+            $el.after('<div class="invalid-feedback d-block">' + msg + '</div>');
+        }
+        function clearInvalid($el) {
+            $el.removeClass('is-invalid');
+            $el.siblings('.invalid-feedback').remove();
+        }
+        function setInvalidSelect2(msg){
+            $productsWrap.addClass('is-invalid');
+            $productsWrap.next('.invalid-feedback').remove();
+            $productsWrap.after('<div class="invalid-feedback d-block">'+msg+'</div>');
+        }
+        function clearInvalidSelect2(){
+            $productsWrap.removeClass('is-invalid');
+            $productsWrap.next('.invalid-feedback').remove();
+        }
+        function parseDate(s) { return s ? new Date(s) : null; }
+
+        // Clear lỗi khi người dùng sửa
+        $percent.on('input', () => clearInvalid($percent));
+        $start.on('change input', () => clearInvalid($start));
+        $end.on('change input', () => clearInvalid($end));
+        $products.on('change', () => clearInvalidSelect2());
+
+        // Thu thập variantIds theo mode
+        function collectVariantIds() {
+            if ($modeBulk.prop('checked')) {
+                return ($('#variantIds').val() || []).map(v => parseInt(v, 10));
+            } else {
+                const ids = [];
+                $('.individual-item .variant-select').each(function () {
+                    const v = $(this).val();
+                    if (v) ids.push(parseInt(v, 10));
+                });
+                return ids;
+            }
+        }
+
+        // Hiển thị kết quả xung đột
+        function renderConflicts(conflictsMap) {
+            // conflictsMap: { "12": [ {promotionId, promotionName, startAt, endAt}, ... ], ... }
+            let html = '<ul class="mb-0 ps-3">';
+            Object.keys(conflictsMap || {}).forEach(vid => {
+                (conflictsMap[vid] || []).forEach(c => {
+                    const s = (c.startAt || '').replace('T',' ');
+                    const e = (c.endAt   || '').replace('T',' ');
+                    html += `<li>Variant #${vid} trùng với Promotion #${c.promotionId} (${c.promotionName}) trong khoảng ${s} → ${e}</li>`;
+                });
+            });
+            html += '</ul>';
+            return html;
+        }
+
+        async function checkOverlaps(payload) {
+            const headers = { 'Content-Type': 'application/json' };
+            if (window.csrfHeaderName && window.csrfValue) {
+                headers[window.csrfHeaderName] = window.csrfValue;
+            }
+
+            const res = await fetch(overlapUrl, {
+                method: 'POST',
+                headers,
+                body: JSON.stringify(payload),
+                credentials: 'same-origin'  // RẤT QUAN TRỌNG: gửi cookie JSESSIONID
+            });
+
+            if (!res.ok) {
+                const text = await res.text().catch(()=>'');
+                throw new Error(`Overlap API failed: ${res.status} ${res.statusText} :: ${text}`);
+            }
+            return res.json();
+        }
+
+
+        // Submit async: chặn, kiểm tra, rồi mới submit thật nếu OK
+        $form.on('submit', async function (e) {
+            e.preventDefault();
+
+            // Xóa alert cũ (nếu có)
+            $('.alert.alert-warning.mt-3.overlaps-box').remove();
+
+            let ok = true;
+
+            // Kiểm tra ngày
+            const start = parseDate($start.val());
+            const end   = parseDate($end.val());
+            if (start && end && end <= start) {
+                setInvalid($end, 'End time must be after start time.');
+                ok = false;
+            }
+
+            // Mode BULK: bắt buộc chọn ít nhất 1 variant
+            if ($modeBulk.prop('checked')) {
+                const chosen = $('#variantIds').val() || [];
+                if (chosen.length === 0) {
+                    setInvalidSelect2('Please select at least 1 product.');
+                    showWarningMessage('Please select at least 1 product.');
+                    ok = false;
+                }
+            }
+
+            // Mode INDIVIDUAL: kiểm tra từng item
+            if ($modeIndividual.prop('checked')) {
+                const $items = $('.individual-item');
+                if ($items.length === 0) {
+                    showWarningMessage('Please add at least 1 product discount.');
+                    ok = false;
+                } else {
+                    let broken = false;
+                    $items.each(function () {
+                        const selectVal = $(this).find('.variant-select').val();
+                        const discount = parseFloat($(this).find('.discount-input').val());
+                        if (!selectVal) {
+                            showWarningMessage('Each item must have a product selected.');
+                            ok = false; broken = true; return false;
+                        }
+                        if (isNaN(discount) || discount <= 0 || discount > 100) {
+                            showWarningMessage('Discount must be > 0 and <= 100 for each item.');
+                            ok = false; broken = true; return false;
+                        }
+                    });
+                    if (broken) return;
+                }
+            }
+
+            if (!ok) {
+                showErrorMessage('Please review the highlighted fields.');
+                return;
+            }
+
+            try {
+                // Payload gửi API overlaps
+                const promotionId = parseInt($('input[name="id"]').val() || '', 10);
+                const payload = {
+                    promotionId: isNaN(promotionId) ? null : promotionId,
+                    startAt: $start.val(),   // "yyyy-MM-ddTHH:mm"
+                    endAt:   $end.val(),
+                    variantIds: collectVariantIds()
+                };
+
+                const result = await checkOverlaps(payload);
+
+                if (result && result.count > 0) {
+                    const html = renderConflicts(result.conflicts || {});
+                    const box = document.createElement('div');
+                    box.className = 'alert alert-warning mt-3 overlaps-box';
+                    box.innerHTML = '<div class="fw-bold mb-2">Overlaps found:</div>' + html;
+                    $form.prepend(box);
+                    showWarningMessage('This product variant is already on sale during this period.');
+                    return; // CHẶN submit khi có xung đột
+                }
+
+                // Không có xung đột → nếu BULK, bổ sung hidden inputs để backend nhận như Individual
+                if ($modeBulk.prop('checked')) {
+                    const chosen = $('#variantIds').val() || [];
+                    const percent = parseFloat($('#percentOff').val());
+                    $('input[name^="promotionProducts["]').remove();
+                    chosen.forEach((id, index) => {
+                        $form.append(`<input type="hidden" name="promotionProducts[${index}].variant.id" value="${id}">`);
+                        $form.append(`<input type="hidden" name="promotionProducts[${index}].percentOff" value="${percent}">`);
+                    });
+                }
+
+                // Submit thật (bỏ chặn trước để tránh lặp)
+                $form.off('submit');
+                $form.trigger('submit');
+
+            } catch (err) {
+                console.error(err);
+                showErrorMessage('This product variant is already on sale during this period.');
+            }
+        });
+    });
+</script>
+
+<script type="text/javascript">
+    moduleURL = "[[@{/promotions}]]";
+
+    $(document).ready(function() {
+        var message = "[[${message}]]";
+        if (message) {
+            showWarningMessage(message);
+        }
+        // $(".link-delete").on("click", function(e) {
+        //     e.preventDefault();
+        //     showDeleteConfirmModal($(this), 'brand');
+        // });
+    });
+</script>
+
+
+</body>
+</html>

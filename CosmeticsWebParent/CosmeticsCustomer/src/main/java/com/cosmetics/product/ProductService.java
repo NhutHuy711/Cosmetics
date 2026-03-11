@@ -1,0 +1,172 @@
+package com.cosmetics.product;
+
+import com.cosmetics.common.entity.product.Product;
+import com.cosmetics.common.exception.ProductNotFoundException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.NoSuchElementException;
+
+@Service
+public class ProductService {
+    public static final int PRODUCTS_PER_PAGE = 10;
+    public static final int SEARCH_RESULTS_PER_PAGE = 10;
+
+    @Autowired
+    private ProductRepository repo;
+
+//    public Page<Product> listByCategory(int pageNum, Integer categoryId,
+//                                        List<String> brandNames, Integer rating,
+//                                        int pageSize) {
+//        Specification<Product> spec = Specification.where(null);
+//
+//        //1
+//        spec = spec.and(ProductSpecification.isBrandAndCategoryEnabled());
+//
+//        spec = spec.and((root, query, cb) ->
+//                cb.isTrue(root.get(Product_.enabled)));
+//
+//        if (categoryId != null) {
+//            spec = spec.and((root, query, cb) -> {
+//                String categoryIdMatch = "-" + String.valueOf(categoryId) + "-";
+//                return cb.like(root.get(Product_.category).get("allParentIDs"),
+//                        "%" + categoryIdMatch + "%");
+//            });
+//        }
+//
+//        if (brandNames != null && !brandNames.isEmpty()) {
+//            spec = spec.and((root, query, cb) -> {
+//                Join<Product, Brand> brandJoin = root.join(Product_.brand);
+//                return brandJoin.get(Brand_.name).in(brandNames);
+//            });
+//        }
+//
+//        if (rating != null) {
+//            spec = spec.and((root, query, cb) ->
+//                    cb.equal(root.get(Product_.averageRating), rating));
+//        }
+//
+//        Pageable pageable = PageRequest.of(pageNum - 1, pageSize);
+//        return repo.findAll(spec, pageable);
+//    }
+
+    public Product getProduct(String alias) throws ProductNotFoundException {
+        Product product = repo.findByAlias(alias);
+        if (product == null || !product.isEnabled()
+                || !product.getBrand().isEnabled()
+                || !product.getCategory().isEnabled()) {
+            throw new ProductNotFoundException("Product not found or unavailable.");
+        }
+        return product;
+    }
+
+
+    public Product getProduct(Integer id) throws ProductNotFoundException {
+        try {
+            Product product = repo.findById(id).get();
+            if (!product.isEnabled()
+                    || !product.getBrand().isEnabled()
+                    || !product.getCategory().isEnabled()) {
+                throw new ProductNotFoundException("Product not found or unavailable.");
+            }
+            return product;
+        } catch (NoSuchElementException ex) {
+            throw new ProductNotFoundException("Could not find any product with ID " + id);
+        }
+    }
+
+
+
+
+
+    public Page<Product> listByPage(Specification<Product> spec, Pageable pageable, Integer categoryId) {
+        if (pageable.getSort().equals(Sort.by("id"))) {
+            String categoryIDMatch = "-" + String.valueOf(categoryId) + "-";
+            return repo.findAllOrderByMostSold(categoryId, categoryIDMatch, pageable);
+        }
+        return repo.findAll(spec, pageable);
+    }
+
+    public Page<Product> listByBrand(Specification<Product> spec, Pageable pageable, Integer brandId) {
+        // Nếu đang sắp xếp theo bán chạy
+        if (pageable.getSort().equals(Sort.by("id"))) {
+            return repo.findAllOrderByMostSoldByBrand(brandId, pageable);
+        }
+
+        // Ngược lại thì lọc bằng Specification
+        return repo.findAll(spec, pageable);
+    }
+
+//    public List<Product> listNewProducts() {
+//        Pageable pageable = PageRequest.of(0, 10);
+//        Page<Product> page = repo.findNewProducts(pageable);
+//        List<Product> products = page.getContent();
+//        System.out.println("Number of new products: " + products.size());
+//        return products;
+//    }
+//
+//    public List<Product> listSpecialOffers() {
+//        Pageable pageable = PageRequest.of(0, 10);
+//        Page<Product> page = repo.findSpecialOffers(pageable);
+//        return page.getContent();
+//    }
+
+     public List<Product> listBestSellingProducts(int limit) {
+         Sort sort = Sort.by("id").ascending();
+         Pageable pageable = PageRequest.of(0, limit, sort);
+         Page<Product> page = repo.findBestSellingProducts(pageable);
+         return page.getContent();
+     }
+
+    public List<Product> findAllEnabled() {
+        return repo.findAllEnabled();
+    }
+
+//    public List<ProductDetail> getProductDetails(Integer productId) {
+//        return productDetailRepository.findByProductId(productId);
+//    }
+
+//    @Cacheable(value = "productPrices", key = "#name.toLowerCase()", unless = "#result == null")
+//    public Float getPrice(String name) {
+//        Product product = repo.findTopByNameContainingIgnoreCase(name);
+//        if (product != null) {
+//            return product.getPrice();
+//        }
+//        return null;
+//    }
+
+//    public List<ProductDTO> getFilteredProducts(Integer brandId, Float maxPrice) {
+//        List<Product> products = repo.filterProducts(brandId, maxPrice);
+//        List<ProductDTO> result = new ArrayList<>();
+//
+//        for (Product p : products) {
+//            ProductDTO dto = new ProductDTO();
+//            dto.setId(p.getId());
+//            dto.setName(p.getName());
+//            dto.setPrice(p.getPrice());
+//            dto.setAlias(p.getAlias());
+//            dto.setLink("/p/" + p.getAlias() + "/");
+//            dto.setDescription(p.getShortDescription());
+//
+//            // Ghép các value trùng key thành 1 chuỗi phân tách bằng dấu phẩy
+//            Map<String, String> specs = p.getDetails()
+//                    .stream()
+//                    .collect(Collectors.toMap(
+//                            ProductDetail::getName,
+//                            ProductDetail::getValue,
+//                            (v1, v2) -> v1 + ", " + v2   // nếu trùng key thì nối lại
+//                    ));
+//
+//            dto.setSpecs(specs);
+//
+//            result.add(dto);
+//        }
+//        return result;
+//    }
+}

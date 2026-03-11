@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="">
+
+<head th:replace="fragments :: page_head('Product Options - Cosmetics Admin', 'none')" />
+
+<body>
+<div th:replace="navigation :: top_nav"></div>
+<div class="main-wrapper">
+    <div th:replace="navigation :: menu"></div>
+
+    <main class="main-content-wrapper bg-light">
+        <div class="container py-6">
+            <div class="row mb-5">
+                <div class="col-12">
+                    <div class="d-flex align-items-center gap-3 flex-wrap">
+                        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center"
+                             style="width: 64px; height: 64px;">
+                            <i class="bi bi-box" style="font-size: 1.75rem;"></i>
+                        </div>
+                        <div>
+                            <h2 class="mb-1 text-primary" th:text="${pageTitle}">Product Variant Management</h2>
+                            <p class="text-muted mb-0">Create product variants from attributes such as color, size, scent, and more.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-lg-8">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="card-title mb-0">Product attributes</h5>
+                                <span class="badge rounded-pill bg-primary" id="attributeCounter">0</span>
+                            </div>
+                            <p class="text-muted">Add attribute names (for example, Color or Size), enter each value individually using Enter or the "+" button, then save the configuration to store it in the catalog.</p>
+                            <div id="variantSummary" class="alert alert-info py-2 px-3 mb-4">
+                                No variants generated yet. Add at least one attribute and press <strong>Generate variants</strong> to calculate the total number of combinations.
+                            </div>
+                            <div id="attributes" class="d-flex flex-column gap-3"></div>
+                            <div class="d-flex flex-wrap gap-2 mt-4">
+                                <button type="button" id="addAttribute" class="btn btn-outline-primary flex-grow-1">
+                                    + Add attribute
+                                </button>
+                                <button type="button" id="generate" class="btn btn-primary flex-grow-1">
+                                    Generate variants
+                                </button>
+                                <button type="button" id="saveAttributes" class="btn btn-success flex-grow-1">
+                                    Save attributes
+                                </button>
+                            </div>
+                            <div id="saveFeedback" class="alert d-none mt-3" role="alert"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<div th:replace="fragments :: footer"></div>
+<div th:replace="fragments :: common-js"></div>
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    const contextPath = /*[[@{/}]]*/ '';
+    const csrfHeaderName = /*[[${_csrf.headerName}]]*/ 'X-CSRF-TOKEN';
+    const csrfValue = /*[[${_csrf.token}]]*/ '';
+    const optionsApiUrl = contextPath + 'options/api';
+    /*]]>*/
+</script>
+<script type="text/javascript" th:src="@{/js/options.js}"></script>
+</body>
+
+</html>

@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="fragments :: page_head('Skin Analyzer', 'none')">
+
+</head>
+<body>
+
+
+
+<!-- HEADER -->
+<div class="border-bottom">
+    <div th:replace="navigation :: header_menu"></div>
+    <div th:replace="navigation :: search_nav"></div>
+    <div th:replace="navigation :: category_nav"></div>
+    <div th:replace="fragments :: loading_spinner"></div>
+</div>
+
+<main class="container mt-5">
+
+    <h2 class="text-center mb-4">📸 Skin Type Analyzer</h2>
+    <p class="text-center text-muted mb-5">
+        Capture or upload a photo to analyze detailed skin regions and detect your overall skin type.
+    </p>
+
+    <div class="row justify-content-center">
+
+        <!-- ================= LEFT SIDE ================= -->
+        <div class="col-md-6">
+
+            <!-- CAMERA -->
+            <div class="card mb-4 shadow-sm">
+                <div class="card-header bg-success text-white fw-bold">Capture with Camera</div>
+                <div class="card-body text-center">
+
+                    <!-- If analyzed -> show analyzed image -->
+                    <img th:if="${analyzedImage}"
+                         th:src="'data:image/jpeg;base64,' + ${analyzedImage}"
+                         class="img-fluid rounded mb-3" />
+
+                    <!-- Camera preview -->
+                    <video th:if="${analyzedImage == null}"
+                           id="camera" width="100%" autoplay playsinline
+                           class="rounded"></video>
+
+                    <button th:if="${analyzedImage == null}"
+                            class="btn btn-success mt-3 w-100" id="captureBtn">📸 Capture</button>
+
+                </div>
+            </div>
+
+            <!-- UPLOAD -->
+            <div class="card mb-4 shadow-sm">
+                <div class="card-header bg-primary text-white fw-bold">Or Upload Image</div>
+                <div class="card-body">
+                    <input id="uploadInput" type="file" accept="image/*" class="form-control">
+                </div>
+            </div>
+
+            <!-- PREVIEW + CROP -->
+            <div class="card mb-4 shadow-sm" id="cropCard" style="display:none;">
+                <div class="card-header bg-dark text-white fw-bold">Preview & Crop</div>
+
+                <div class="card-body text-center">
+                    <div class="crop-wrapper mb-3">
+                        <img id="previewImage" class="img-fluid rounded"/>
+                    </div>
+
+                    <form id="uploadForm" th:action="@{/skin-analysis/submit}"
+                          method="post" enctype="multipart/form-data">
+                        <input type="file" id="finalFile" name="file" style="display:none;">
+
+                        <button type="submit" class="btn btn-primary w-100">
+                            🔍 Analyze Skin Type
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ================= RIGHT SIDE ================= -->
+        <div class="col-md-5" th:if="${result}">
+
+            <!-- REGION RESULTS -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-warning fw-bold">
+                    🔬 Region-based Skin Analysis
+                </div>
+
+                <div class="card-body">
+                    <div class="row"
+                         th:each="r : ${result.regionLabels}">
+
+                        <div class="col-12 mb-3 p-2 border rounded bg-light">
+
+                            <h6 class="mb-2">
+                                <b th:text="${r.key}"></b>:
+                                <span class="text-primary" th:text="${r.value}"></span>
+                            </h6>
+
+                            <img th:src="'data:image/jpeg;base64,' + ${result.patches[r.key]}"
+                                 style="width:130px; border-radius:8px;">
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- FINAL RESULT -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-dark text-white fw-bold">
+                    🎯 Final Skin Type Prediction
+                </div>
+                <div class="card-body">
+
+                    <h4 class="mb-3">
+                        Skin Type:
+                        <span class="text-success" th:text="${result.finalLabel}"></span>
+                    </h4>
+
+                    <hr>
+
+                    <h5 class="mb-2">Average Probabilities</h5>
+                    <ul class="list-group">
+                        <li th:each="p, stat : ${result.finalProbs}">
+                            <b th:text="${classNames[stat.index]}"></b> :
+                            <span th:text="${#numbers.formatDecimal(p, 1, 2)}"></span>
+                        </li>
+                    </ul>
+
+                    <a class="btn btn-success w-100 mt-4"
+                       th:href="@{'/search?keyword=' + ${result.finalLabel}}">
+                        🛒 Product recommendations for skin types:
+                        <b th:text="${result.finalLabel}"></b>
+                    </a>
+
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+</main>
+
+
+<div th:replace="navigation :: footer_menu"></div>
+
+<style>
+    /* Khung chứa preview/crop: giới hạn chiều cao và không cho tràn */
+    .crop-wrapper{
+        width: 100%;
+        max-height: 420px;           /* bạn có thể chỉnh 320/480 tùy layout */
+        overflow: hidden;
+        border-radius: .5rem;
+        background: #f8f9fa;
+    }
+
+    /* Ảnh gốc trước khi cropper gắn vào */
+    #previewImage{
+        display: block;
+        max-width: 100%;
+        width: 100%;
+        height: auto;
+    }
+
+    /* Cropper responsive theo card */
+    .cropper-container{
+        max-width: 100% !important;
+    }
+</style>
+
+<script th:if="${analyzedImage == null}">
+    navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
+        document.getElementById("camera").srcObject = stream;
+    });
+</script>
+
+<script>
+    let cropper;
+    let isSubmitting = false;
+
+    const uploadInput = document.getElementById("uploadInput");
+    const previewImage = document.getElementById("previewImage");
+    const cropCard = document.getElementById("cropCard");
+    const finalFileInput = document.getElementById("finalFile");
+    const uploadForm = document.getElementById("uploadForm");
+    const analyzeBtn = uploadForm.querySelector('button[type="submit"]');
+
+    const video = document.getElementById("camera");
+    const captureBtn = document.getElementById("captureBtn");
+
+    // Capture Camera
+    if (captureBtn) {
+        captureBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+
+            if (!video || !video.srcObject) {
+                alert("Camera chưa sẵn sàng hoặc bạn chưa cấp quyền truy cập.");
+                return;
+            }
+
+            const w = video.videoWidth;
+            const h = video.videoHeight;
+
+            if (!w || !h) {
+                alert("Camera chưa load xong. Thử lại sau 1 giây.");
+                return;
+            }
+
+            const canvas = document.createElement("canvas");
+            canvas.width = w;
+            canvas.height = h;
+            canvas.getContext("2d").drawImage(video, 0, 0, w, h);
+
+            showPreview(canvas.toDataURL("image/jpeg"));
+        });
+    }
+
+
+    // Upload File
+    uploadInput.onchange = function () {
+        const file = this.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = e => showPreview(e.target.result);
+        reader.readAsDataURL(file);
+    };
+
+    function showPreview(imageSrc) {
+        cropCard.style.display = "block";
+        isSubmitting = false;
+        analyzeBtn.disabled = false;
+
+        previewImage.onload = () => {
+            if (cropper) cropper.destroy();
+
+            if (typeof Cropper === "undefined") {
+                alert("Cropper.js chưa được load. Hãy kiểm tra đã include cropper.min.js chưa.");
+                return;
+            }
+
+            cropper = new Cropper(previewImage, {
+                aspectRatio: 1,
+                viewMode: 1,
+                responsive: true,
+                autoCropArea: 1,
+                background: false,
+                movable: true,
+                zoomable: true,
+                scalable: false,
+                rotatable: false
+            });
+        };
+
+        previewImage.src = imageSrc;
+    }
+
+    uploadForm.addEventListener("submit", function (e) {
+        e.preventDefault();
+
+        if (isSubmitting) return;
+
+        if (!cropper) {
+            alert("Vui lòng upload/capture ảnh trước khi Analyze.");
+            return;
+        }
+
+        analyzeBtn.disabled = true;
+
+        const croppedCanvas = cropper.getCroppedCanvas({
+            width: 512,
+            height: 512,
+            imageSmoothingEnabled: true,
+            imageSmoothingQuality: "high"
+        });
+
+        if (!croppedCanvas) {
+            analyzeBtn.disabled = false;
+            return;
+        }
+
+        croppedCanvas.toBlob((blob) => {
+            if (!blob) {
+                analyzeBtn.disabled = false;
+                return;
+            }
+
+            const file = new File([blob], "cropped.jpg", { type: "image/jpeg" });
+            const dt = new DataTransfer();
+            dt.items.add(file);
+            finalFileInput.files = dt.files;
+
+            isSubmitting = true;
+            uploadForm.submit(); // submit thật (bỏ qua handler vì isSubmitting=true)
+        }, "image/jpeg", 0.92);
+    });
+</script>
+
+
+</body>
+</html>

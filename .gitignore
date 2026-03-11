@@ -1,0 +1,2 @@
+# ignore spring config secret
+CosmeticsWebParent/CosmeticsCustomer/src/main/resources/application.yml
