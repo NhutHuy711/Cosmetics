@@ -1,65 +1,75 @@
-Cosmetics E-commerce Website with Skin-based Recommendation
-📌 Introduction
+# Cosmetics E-Commerce Website with AI-Based Skin Type Recommendation
 
-This project is a cosmetics e-commerce website developed as a graduation thesis at the Posts and Telecommunications Institute of Technology (PTIT).
+Website thương mại điện tử kinh doanh mỹ phẩm, tích hợp mô-đun AI nhận diện loại da từ ảnh khuôn mặt để gợi ý sản phẩm phù hợp cho người dùng.
 
-The system allows users to browse and purchase cosmetic products online while also providing personalized product recommendations based on skin characteristics.
+## Giới thiệu
 
-The goal of this project is to create a modern web application that improves the online shopping experience and helps users select products that are more suitable for their skin type.
+Dự án được xây dựng với mục tiêu phát triển một nền tảng bán mỹ phẩm trực tuyến kết hợp trí tuệ nhân tạo nhằm cá nhân hóa trải nghiệm mua sắm. Bên cạnh các chức năng thương mại điện tử thông thường như quản lý sản phẩm, giỏ hàng, đặt hàng, thanh toán và theo dõi đơn hàng, hệ thống còn hỗ trợ phân tích loại da và đề xuất sản phẩm phù hợp dựa trên kết quả nhận diện.
 
-🎯 Objectives
+## Mục tiêu dự án
 
-Build a cosmetics online shopping website
+- Xây dựng website thương mại điện tử chuyên kinh doanh mỹ phẩm.
+- Hỗ trợ cá nhân hóa trải nghiệm mua sắm bằng khuyến nghị sản phẩm theo loại da.
+- Hoàn thiện các chức năng nghiệp vụ như quản lý sản phẩm, kho, đơn hàng, người dùng và tìm kiếm.
+- Tích hợp mô hình AI nhận diện 5 nhóm da: Combination, Dry, Normal, Oily, Sensitive.
+- Triển khai mô hình dưới dạng dịch vụ suy luận để website có thể gọi và nhận kết quả phân tích từ đó đưa ra sản phẩm cho người dùng.
 
-Provide product recommendation based on skin characteristics
+## Tính năng chính
 
-Implement product browsing, searching, and filtering
+### Dành cho khách hàng
+- Duyệt sản phẩm theo danh mục
+- Tìm kiếm sản phẩm
+- Xem chi tiết sản phẩm
+- Quản lý giỏ hàng
+- Đặt hàng và thanh toán
+- Xem và theo dõi đơn hàng
+- Đánh giá sản phẩm
+- Nhận gợi ý sản phẩm theo loại da sau khi phân tích ảnh khuôn mặt
 
-Manage orders, users, and products
+### Dành cho quản trị và nhân sự
+- Dashboard quản trị
+- Quản lý nhân viên
+- Quản lý khách hàng
+- Quản lý thương hiệu
+- Quản lý danh mục
+- Quản lý sản phẩm
+- Quản lý tồn kho và phiếu nhập
+- Quản lý khuyến mãi
+- Quản lý đơn hàng
+- Quản lý phí vận chuyển
+- Quản lý đánh giá
+- Thống kê và báo cáo
 
-Provide admin management system
+### Mô-đun AI Skin Analyzer
+- Tải ảnh hoặc chụp ảnh khuôn mặt
+- Phát hiện khuôn mặt
+- Phân tích theo từng vùng da
+- Dự đoán loại da tổng thể
+- Trả kết quả để hệ thống gợi ý danh sách sản phẩm phù hợp
 
-✨ Main Features
-👤 Customer Features
+## Công nghệ sử dụng
 
-User registration and login
+### Backend Web
+- Java
+- Spring Boot
+- JPA
+- Thymeleaf
 
-Browse cosmetic products
+### Frontend
+- Bootstrap
+- JavaScript
+- jQuery
 
-Search and filter products
+### Database
+- MySQL Server
 
-View product details
+### Search Engine
+- Elasticsearch
+- Docker
 
-Add products to cart
-
-Place orders
-
-Product recommendation based on skin type
-
-🛒 Shopping Features
-
-Shopping cart management
-
-Order checkout
-
-Order history
-
-Product review
-
-🤖 Recommendation System
-
-Recommend cosmetic products based on:
-
-Skin type
-
-🛠 Admin Features
-
-Manage products
-
-Manage categories and brands
-
-Manage orders
-
-Manage users
-
-Manage inventory
+### AI Service
+- Python
+- FastAPI
+- EfficientNet
+- YOLOv8n-face
+- MediaPipe FaceMesh
